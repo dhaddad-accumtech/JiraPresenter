@@ -5,6 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jira Wallboard — High-Density Grid</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  <script src="config.js"></script>
+  <script>
+    // Apply the effective theme before first paint to avoid a dark->light flash.
+    // Precedence: ?theme= URL param > config.js `theme` (kiosk override) > localStorage.
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var forced = params.get('theme');
+        if (forced !== 'dark' && forced !== 'light') {
+          var cfg = window.WALLBOARD_CONFIG && window.WALLBOARD_CONFIG.theme;
+          forced = (cfg === 'dark' || cfg === 'light') ? cfg : null;
+        }
+        var theme = forced || localStorage.getItem('wallboard-theme');
+        if (theme === 'light') {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="style.css" />
@@ -57,6 +76,11 @@
           <span class="text-slate-400">Sync in:</span>
           <span id="refresh-countdown" class="font-mono font-bold text-slate-200">3h 0m</span>
         </div>
+
+        <!-- Light/Dark Theme Toggle -->
+        <button id="theme-toggle-btn" class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-300 hover:text-white hover:bg-slate-700/50 transition" title="Toggle light/dark mode">
+          <i id="theme-icon" data-lucide="moon" class="w-3.5 h-3.5"></i>
+        </button>
 
         <!-- Clock -->
         <div class="text-right pl-2 border-l border-slate-800">
@@ -139,7 +163,6 @@
     </div>
   </main>
 
-  <script src="config.js"></script>
   <script src="tv-common.js"></script>
   <script>
     async function loadData() {

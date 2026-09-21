@@ -1,6 +1,6 @@
 # Agent Memory
 
-*Last Updated: 2026-09-17 22:18*
+*Last Updated: 2026-09-21 12:53*
 
 ## Project Overview
 - **Name**: Jira Public Presenter
@@ -39,3 +39,10 @@
 - Ask questions until 100% understood before undertaking tasks.
 - Standard timestamp generation: `powershell -Command "Get-Date -Format 'yyyy-MM-dd HH:mm'"`.
 - Keep this memory file concise and focused on high-value facts.
+
+## Light/Dark Theme Toggle (added 2026-09-21)
+- All 3 wallboards (`index.html`, `auto-scroll.html`, `compact-grid.html`) default to dark mode (`<html class="dark">`) but now have a sun/moon toggle button (`#theme-toggle-btn` / `#theme-icon`) next to the clock in the header.
+- Logic lives in `tv-common.js` (`initTheme`, `applyTheme`, `toggleTheme`); preference persists per-browser via `localStorage['wallboard-theme']` ('dark' or 'light'), so a kiosk/TV browser keeps its chosen mode across refreshes. Each HTML `<head>` also has a tiny inline script (before the Tailwind CDN `<script>`) that applies the saved theme synchronously to avoid a flash of the wrong theme on load.
+- Because the UI uses hardcoded Tailwind utility classes (no `dark:` variants) via the Tailwind CDN script, light mode is implemented as CSS overrides in `style.css` under `html:not(.dark) [class~="..."]` using **exact-token attribute selectors** (`[class~="X"]`), not substring (`[class*="X"]`), to avoid accidentally repainting `hover:`-prefixed utility classes outside of `:hover`. Accent colors (amber/blue/emerald/rose/orange text-*-300/400) are darkened in light mode for contrast; solid accent buttons/icons (bg-blue-600 etc., gradient logo tiles) are explicitly excluded from the neutral text-white→dark override so they stay legible.
+- `site/app.js` is orphaned/unused (not referenced by any current HTML page) — a legacy dashboard script, left untouched.
+- Verified via a local `http-server` + Playwright screenshot script (not committed) toggling all 3 pages with mock `data/jira_data.json`; no console errors, good contrast in both modes.

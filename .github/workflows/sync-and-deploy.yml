@@ -53,14 +53,16 @@ jobs:
           python scripts/fetch_jira.py --output site/data/jira_data.json
 
       - name: Apply Wallboard Theme Override
-        if: ${{ vars.WALLBOARD_THEME != '' || secrets.WALLBOARD_THEME != '' }}
         env:
           WALLBOARD_THEME: ${{ vars.WALLBOARD_THEME || secrets.WALLBOARD_THEME }}
         run: |
           python - <<'PY'
           import os, re, sys
 
-          theme = os.environ["WALLBOARD_THEME"].strip().lower()
+          theme = os.environ.get("WALLBOARD_THEME", "").strip().lower()
+          if not theme:
+              print("WALLBOARD_THEME not set; skipping theme override")
+              sys.exit(0)
           if theme not in ("dark", "light", "auto"):
               sys.exit(f"WALLBOARD_THEME must be 'dark', 'light', or 'auto' (got: {theme!r})")
 

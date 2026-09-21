@@ -52,32 +52,6 @@ jobs:
         run: |
           python scripts/fetch_jira.py --output site/data/jira_data.json
 
-      - name: Apply Wallboard Theme Override
-        if: ${{ vars.WALLBOARD_THEME != '' || secrets.WALLBOARD_THEME != '' }}
-        env:
-          WALLBOARD_THEME: ${{ vars.WALLBOARD_THEME || secrets.WALLBOARD_THEME }}
-        run: |
-          python - <<'PY'
-          import os, re, sys
-
-          theme = os.environ["WALLBOARD_THEME"].strip().lower()
-          if theme not in ("dark", "light", "auto"):
-              sys.exit(f"WALLBOARD_THEME must be 'dark', 'light', or 'auto' (got: {theme!r})")
-
-          path = "site/config.js"
-          with open(path, "r", encoding="utf-8") as f:
-              content = f.read()
-
-          new_content, count = re.subn(r"theme:\s*'[^']*'", f"theme: '{theme}'", content)
-          if count != 1:
-              sys.exit("Could not find a single `theme:` field to update in site/config.js")
-
-          with open(path, "w", encoding="utf-8") as f:
-              f.write(new_content)
-
-          print(f"Wallboard theme set to '{theme}' for this deployment")
-          PY
-
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 

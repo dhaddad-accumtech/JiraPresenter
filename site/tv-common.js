@@ -22,6 +22,82 @@ function initRefreshSettings(onRefreshCallback) {
 
   startDigitalClock();
   startCountdown(onRefreshCallback);
+  initTheme();
+}
+
+// ---------------------------------------------------------------------------
+// Light / Dark theme toggle
+// Wallboards default to dark mode. The choice is remembered per-browser via
+// localStorage so a TV/kiosk browser keeps showing the preferred theme after
+// a refresh. For non-interactive displays (no mouse/touch, e.g. a shared
+// office TV), the theme can instead be forced via config.js's `theme` field
+// ('dark' or 'light'), which ignores localStorage/clicks and hides the
+// toggle button since it would otherwise be unusable there.
+// ---------------------------------------------------------------------------
+const TV_THEME_STORAGE_KEY = 'wallboard-theme';
+
+// Returns 'dark'/'light' if the theme is forced (config.js or a ?theme= URL
+// override), or null when the display is interactive ('auto').
+function getForcedTheme() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramTheme = urlParams.get('theme');
+  if (paramTheme === 'dark' || paramTheme === 'light') {
+    return paramTheme;
+  }
+  const cfgTheme = window.WALLBOARD_CONFIG && window.WALLBOARD_CONFIG.theme;
+  if (cfgTheme === 'dark' || cfgTheme === 'light') {
+    return cfgTheme;
+  }
+  return null;
+}
+
+function getStoredTheme() {
+  const forced = getForcedTheme();
+  if (forced) return forced;
+  try {
+    return localStorage.getItem(TV_THEME_STORAGE_KEY) || 'dark';
+  } catch (e) {
+    return 'dark';
+  }
+}
+
+function applyTheme(theme) {
+  const isDark = theme !== 'light';
+  document.documentElement.classList.toggle('dark', isDark);
+
+  const icon = document.getElementById('theme-icon');
+  if (icon) {
+    icon.setAttribute('data-lucide', isDark ? 'moon' : 'sun');
+    if (window.lucide) lucide.createIcons();
+  }
+
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+}
+
+function toggleTheme() {
+  if (getForcedTheme()) return; // theme is locked for non-interactive/kiosk displays
+  const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+  try {
+    localStorage.setItem(TV_THEME_STORAGE_KEY, next);
+  } catch (e) {
+    // localStorage unavailable (e.g. private browsing) - theme just won't persist
+  }
+  applyTheme(next);
+}
+
+function initTheme() {
+  applyTheme(getStoredTheme());
+  const btn = document.getElementById('theme-toggle-btn');
+  if (!btn) return;
+  if (getForcedTheme()) {
+    btn.style.display = 'none'; // hide the dead control when the theme is locked
+    return;
+  }
+  if (!btn.dataset.themeBound) {
+    btn.addEventListener('click', toggleTheme);
+    btn.dataset.themeBound = 'true';
+  }
 }
 
 // Live Digital Clock

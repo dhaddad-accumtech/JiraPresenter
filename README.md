@@ -147,6 +147,18 @@ Open `http://localhost:8000` in your browser.
 
 ---
 
+## 🌗 Light / Dark Theme (Kiosk & Wallboard Displays)
+
+Each wallboard view defaults to dark mode with a sun/moon toggle button next to the clock. That toggle is only usable on an interactive browser (mouse/touch) — it's useless on a shared, non-interactive TV/kiosk display. To fix the theme for those displays without needing to click anything:
+
+- **Edit `site/config.js`** and set `theme` to `'dark'` or `'light'` (default is `'auto'`, which keeps the toggle interactive). This is committed with the site, so it applies everywhere the site is deployed.
+- **Or, for GitHub Pages deployments**, set a repository Variable (or Secret) named `WALLBOARD_THEME` to `dark`, `light`, or `auto` in **Settings → Secrets and variables → Actions**. The `sync-and-deploy.yml` workflow rewrites `site/config.js` with this value on every deploy — no code changes needed.
+- **Or, for quick ad-hoc testing**, append `?theme=dark` or `?theme=light` to any wallboard URL.
+
+When a theme is forced (via `config.js` or `?theme=`), the toggle button is automatically hidden since it would otherwise have no effect.
+
+---
+
 ## 📁 Repository Structure
 
 ```
